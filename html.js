@@ -1,47 +1,56 @@
 /**
  * Created by James on 16/09/2016.
  */
+//"use strict";
 var jsgui = require('jsgui2-lang');
 var str_arr_mapify = jsgui.str_arr_mapify;
 var get_a_sig = jsgui.get_a_sig;
 var each = jsgui.each;
-var Control = jsgui.Control = require('./control');
+var Control = jsgui.Control = require('./control-enh');
 
 var map_Controls = jsgui.map_Controls = {};
 
 var core_extension = str_arr_mapify(function (tagName) {
-	jsgui[tagName] = Control.extend({
-		'init': function (spec) {
+
+
+
+	jsgui[tagName] = class extends Control {
+		'constructor'(spec) {
 			//spec.tagName = tagName;
 
 			//console.log('core extension tagName ' + tagName);
 
-			this._super(spec);
+			super(spec);
 
-			this.get('dom').set('tagName', tagName);
+			//this.get('dom').set('tagName', tagName);
+
+			this.dom.tagName = tagName;
 			// dom.tagName?
 
 		}
-	});
+	};
+
 	jsgui[tagName].prototype._tag_name = tagName;
 	map_Controls[tagName] = jsgui[tagName];
 });
 
 var core_extension_no_closing_tag = str_arr_mapify(function (tagName) {
-	jsgui[tagName] = Control.extend({
-		'init': function (spec) {
+	jsgui[tagName] = class extends Control {
+		'constructor'(spec) {
 			//spec.tagName = tagName;
 
 			//console.log('core extension tagName ' + tagName);
 
-			this._super(spec);
+			super(spec);
 
-			this.get('dom').set('tagName', tagName);
-			this.get('dom').set('noClosingTag', true);
+			//this.get('dom').set('tagName', tagName);
+
+			this.dom.tagName = tagName;
+			this.dom.noClosingTag = true;
 			// dom.tagName?
 
 		}
-	});
+	};
 	jsgui[tagName].prototype._tag_name = tagName;
 	map_Controls[tagName] = jsgui[tagName];
 });
@@ -272,13 +281,14 @@ jsgui.activate = activate;
 core_extension('html head title body div span h1 h2 h3 h4 h5 h6 label p a script button form img ul li audio video table tr td caption thead colgroup col');
 core_extension_no_closing_tag('link input');
 
-
-
-class HTML_Document extends jsgui.html {
+class HTML_Document extends jsgui.Control {
 	// no tag to render...
 	//  but has dtd.
+	'constructor'(spec) {
 
-	'render_dtd': function () {
+	}
+
+	'render_dtd'() {
 		return '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">\n';
 	}
 
@@ -287,28 +297,31 @@ class HTML_Document extends jsgui.html {
 
 
 
-class Blank_HTML_Document extends HTML_Document({
+class Blank_HTML_Document extends HTML_Document {
 	'constructor'(spec) {
-		super(spec);
+		//console.log('super', typeof super);
 
-		var context = this._context;
+		HTML_Document.prototype.constructor.call(this, spec);
+		//super(spec);
+
+		var context = this.context;
 		//console.log('context ' + context);
 
 		if (!spec.el) {
 			var head = new jsgui.head({
 				'context': context
 			});
-			this.get('content').add(head);
+			this.content.add(head);
 
 			var title = new jsgui.title({
 				'context': context
 			});
-			head.get('content').add(title);
+			head.content.add(title);
 
 			var body = new jsgui.body({
 				'context': context
 			});
-			this.get('content').add(body);
+			this.content.add(body);
 
 			// and have .head, .title, .body?
 
@@ -327,7 +340,7 @@ class Blank_HTML_Document extends HTML_Document({
 
 
 
-		//console.log('content ' + stringify(this.get('content')));
+		//console.log('content ' + stringify(this.content));
 
 		//throw 'stop';
 
@@ -340,7 +353,7 @@ class Blank_HTML_Document extends HTML_Document({
 		if (sig =='[]') {
 			// find the body control.
 
-			var content = this.get('content');
+			var content = this.content;
 			//console.log('content', content);
 			var body = content.get(1);
 			//console.log('body', body);
@@ -351,8 +364,6 @@ class Blank_HTML_Document extends HTML_Document({
 	}
 };
 
-
-
 // Want a body function in other nodes, available throughout the document?
 
 
@@ -360,7 +371,6 @@ class Blank_HTML_Document extends HTML_Document({
 class Client_HTML_Document extends Blank_HTML_Document {
 	'constructor'(spec) {
 		super(spec);
-
 		//spec.context.ctrl_document = this;
 		this.active();
 
@@ -369,15 +379,13 @@ class Client_HTML_Document extends Blank_HTML_Document {
 	'include_js'(url) {
 		var head = this.get('head');
 		// create jsgui.script
-
 		var script = new jsgui.script({
 			//<script type="text/JavaScript" src="abc.js"></script>
-			'context': this._context
+			'context': this.context
 		})
 		// <script data-main="scripts/main" src="scripts/require.js"></script>
 		var dom = script.get('dom');
 		//console.log('* dom ' + stringify(dom));
-
 		//var domAttributes = script.get('dom.attributes');
 		var domAttributes = dom.get('attributes');
 		//console.log('domAttributes ' + domAttributes);
@@ -391,17 +399,15 @@ class Client_HTML_Document extends Blank_HTML_Document {
 	'include_css'(url) {
 		var head = this.get('head');
 		// create jsgui.script
-
 		// <link rel="stylesheet" type="text/css" href="theme.css">
 
 		var link = new jsgui.link({
 			//<script type="text/JavaScript" src="abc.js"></script>
-			'context': this._context
+			'context': this.context
 		})
 		// <script data-main="scripts/main" src="scripts/require.js"></script>
 		var dom = link.get('dom');
 		//console.log('* dom ' + stringify(dom));
-
 		//var domAttributes = script.get('dom.attributes');
 		var domAttributes = dom.get('attributes');
 		//console.log('domAttributes ' + domAttributes);
@@ -415,13 +421,10 @@ class Client_HTML_Document extends Blank_HTML_Document {
 
 
 	'include_jsgui_client'(js_file_require_data_main) {
-
 		// Could add the default client file.
-
 		// Or a specific client file with a control that also has client-side code.
 		//  The client-side code won't get processed on the server.
 		//  There will be a specific place where client side code gets called upon activation.
-
 		// could include a specific parameter for js_file_require_data_main
 
 		js_file_require_data_main = js_file_require_data_main || '/js/web/jsgui-html-client';
@@ -435,12 +438,12 @@ class Client_HTML_Document extends Blank_HTML_Document {
 		//  is there a way to keep it at the end of the body?
 		//  could put it in the head for the moment.
 
-		var head = this.get('head');
+		var head = this.head;
 		// create jsgui.script
 
 		var script = new jsgui.script({
 			//<script type="text/JavaScript" src="abc.js"></script>
-			'context': this._context
+			'context': this.context
 		})
 		// <script data-main="scripts/main" src="scripts/require.js"></script>
 
@@ -449,28 +452,13 @@ class Client_HTML_Document extends Blank_HTML_Document {
 
 		//var domAttributes = script.get('dom.attributes');
 		//var domAttributes = dom.get('attributes');
-		var domAttributes = script.get('dom.attributes');
+		var domAttributes = script.dom.attributes;
 
-		//console.log('domAttributes ' + domAttributes);
-
-
-
-		//domAttributes.set('type', 'text/javascript');
-		//domAttributes.set('src', '/js/require.js');
-		//domAttributes.set('data-main', js_file_require_data_main);
 		domAttributes.set({
 			'type': 'text/javascript',
 			'src': '/js/web/require.js',
 			'data-main': js_file_require_data_main
 		});
-
-
-		//script.set('dom.attributes.type', 'text/javascript');
-		//script.set('dom.attributes.src', 'js/jsgui-client.js');
-		//script.set('dom.attributes.src', 'js/require.js');
-		//script.set('dom.attributes.data-main', 'js/jsgui-client.js');
-		//script.set('dom.attributes.data-main', js_file_require_data_main);
-
 
 		head.add(script);
 		//throw 'stop';
@@ -495,7 +483,7 @@ class Client_HTML_Document extends Blank_HTML_Document {
 		var head = this.get('head');
 		var link = new jsgui.link({
 			//<script type="text/JavaScript" src="abc.js"></script>
-			'context': this._context
+			'context': this.context
 
 		});
 		//var lda = link.get('dom.attributes');
@@ -503,23 +491,16 @@ class Client_HTML_Document extends Blank_HTML_Document {
 		//console.log('* dom ' + stringify(dom));
 
 		//var domAttributes = script.get('dom.attributes');
-		var domAttributes = link.get('dom.attributes');
+		var domAttributes = link.dom.attributes;
 
 		// link.dom.attrs
-
-
 		domAttributes.set('rel', 'stylesheet');
 		domAttributes.set('type', 'text/css');
 		domAttributes.set('href', '/css/basic.css');
-
-		head.content().add(link);
+		head.content.add(link);
 		// <link rel="stylesheet" type="text/css" href="theme.css">
 	}
-
 	// also need to include jsgui client css
-
-
-
 }
 
 jsgui.HTML_Document = HTML_Document;

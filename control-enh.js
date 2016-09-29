@@ -1,8 +1,11 @@
 /**
  * Created by James on 16/09/2016.
  */
-
+var jsgui = require('jsgui2-lang');
+var get_a_sig = jsgui.get_a_sig, fp = jsgui.fp;
 var Control_Core = require('./control-core');
+
+// get_a_sig
 
 class Control extends Control_Core {
 	//'fields': {
@@ -15,7 +18,6 @@ class Control extends Control_Core {
 		// The enhanced control can look at the element for data-jsgui-fields
 		//  Those fields will be fed back into the initialization.
 
-
 		if (spec.el) {
 			var jgf = spec.el.getAttribute('data-jsgui-fields');
 
@@ -27,24 +29,17 @@ class Control extends Control_Core {
 			}
 		}
 
-
-		super(spec);
+		super(spec);;
 
 		if (typeof spec.selection_scope !== 'undefined') {
 			//console.log('spec.selection_scope', spec.selection_scope);
-
-			var selection_scope = this._context.get_selection_scope_by_id(spec.selection_scope);
+			//var selection_scope = this.context.get_selection_scope_by_id(spec.selection_scope);
 			//  Do we need to set the control of the selection scope?
 
 			//console.log('selection_scope', selection_scope);
-
-
-			this.set('selection_scope', selection_scope);
-
+			this.selection_scope = selection_scope;
 			// then if we have the selection scope, we should set it up for the control.
-
-
-			var scrollbars = this.value('scrollbars');
+			var scrollbars = this.scrollbars;
 			console.log('scrollbars', scrollbars);
 
 
@@ -57,7 +52,7 @@ class Control extends Control_Core {
 
 
 				var scroll_view = new Scroll_View({
-					'context': this._context
+					'context': this.context
 				})
 
 				this.add(scroll_view);
@@ -76,24 +71,18 @@ class Control extends Control_Core {
 		//console.log('sig', sig);
 		var a = arguments; a.l = arguments.length; var sig = get_a_sig(a, 1);
 		if (sig == '[]') {
-			var el = this.get('dom.el');
-
-
+			var el = this.dom.el;
 			var bcr = el.getBoundingClientRect();
 			var res = [[bcr.left, bcr.top], [bcr.right, bcr.bottom], [bcr.width, bcr.height]];
-
 			return res;
 		}
 		if (sig == '[a]') {
 			console.log('bcr sig arr');
-
 			var bcr_def = a[0];
 			var pos = bcr_def[0];
 			var br_pos = bcr_def[1];
 			var size = bcr_def[2];
-
 			// then we actually want to set the css.
-
 			this.style({
 				'position': 'absolute',
 				'left': pos[0] + 'px',
@@ -101,11 +90,9 @@ class Control extends Control_Core {
 				'width': size[0] + 'px',
 				'height': size[1] + 'px'
 			});
-			//throw 'stop';
 		}
 	}
-
-	'add_text': function(value) {
+	'add_text'(value) {
 		var tn = new Text_Node({
 			'context': this.context,
 			'text': value + ''
@@ -113,24 +100,21 @@ class Control extends Control_Core {
 		this.add(tn);
 		return tn;
 	}
-
 	'computed_style'() {
 		var a = arguments; a.l = arguments.length; var sig = get_a_sig(a, 1);
 		if (sig == '[s]') {
 			// Should only work on the client.
 			var property_name = a[0];
-			var x = this.get('dom.el');
-			if (x.currentStyle)
-				var y = x.currentStyle[styleProp];
+			var el = this.dom.el;
+			if (el.currentStyle)
+				var y = el.currentStyle[styleProp];
 			else if (window.getComputedStyle)
-				var y = document.defaultView.getComputedStyle(x,null).getPropertyValue(property_name);
+				var y = document.defaultView.getComputedStyle(el, null).getPropertyValue(property_name);
 			return y;
 		}
 	}
-
 	// Likely to be within the core.
 	//  Meaning it's not done with progressive enhancement.
-
 	'padding'() {
 		var a = arguments; a.l = arguments.length; var sig = get_a_sig(a, 1);
 		if (sig == '[]') {
@@ -138,10 +122,10 @@ class Control extends Control_Core {
 			var left, top, right, bottom;
 
 			var c_padding = this.computed_style('padding');
-			console.log('c_padding', c_padding);
+			//console.log('c_padding', c_padding);
 
 			var s_c_padding = c_padding.split(' ');
-			console.log('s_c_padding.length', s_c_padding.length);
+			//console.log('s_c_padding.length', s_c_padding.length);
 
 			if (s_c_padding.length == 3) {
 				// top, right, bottom
@@ -152,7 +136,6 @@ class Control extends Control_Core {
 			}
 		}
 	}
-
 	'border'() {
 		var a = arguments; a.l = arguments.length; var sig = get_a_sig(a, 1);
 		if (sig == '[]') {
@@ -183,16 +166,10 @@ class Control extends Control_Core {
 			var b2 = c_border.split(', ').join('');
 			var s_c_border = b2.split(' ');
 			console.log('s_c_border', s_c_border);
-
 			// then can get the thickness from the first one.
-
 			var thickness = parseInt(s_c_border[0], 10);
-
 			// the 4 different thicknesses?
-
 			return thickness;
-
-
 		}
 	}
 
@@ -203,7 +180,6 @@ class Control extends Control_Core {
 
 		// insert a new relative div?
 		//  relative for layout?
-
 
 	}
 
@@ -216,7 +192,7 @@ class Control extends Control_Core {
 
 		var type_name = this.__type_name;
 		var id = this._id();
-		var context = this._context;
+		var context = this.context;
 
 		// spin up a new control, using they type of controls.
 
@@ -257,7 +233,7 @@ class Control extends Control_Core {
 			new_ctrl.set('dom.attributes.class', css_class);
 
 			// Should copy the controls inside the one being cloned.
-			var my_contents = this.get('content');
+			var my_contents = this.content;
 
 			// should be able to clone a Data_Value too.
 
@@ -287,18 +263,13 @@ class Control extends Control_Core {
 			})
 
 			console.log('this', this);
-
 			// could get the computed width?
 
 			// computed padding too?
 
-
-
 			var my_bcr = this.bcr();
 
-
 			console.log('my_bcr', my_bcr);
-
 
 			var my_padding = this.padding();
 			console.log('my_padding', my_padding);
@@ -312,23 +283,18 @@ class Control extends Control_Core {
 
 			console.log('my_border_thickness', my_border_thickness);
 
-
 			var t_my_border_thickness = tof(my_border_thickness);
 
 			if (t_my_border_thickness == 'number') {
 				my_bcr[2][0] = my_bcr[2][0] - 2 * my_border_thickness;
 				my_bcr[2][1] = my_bcr[2][1] - 2 * my_border_thickness;
-
 			}
 			new_ctrl.bcr(my_bcr);
-
-
-
 
 			console.log('new_ctrl', new_ctrl);
 			body.add(new_ctrl);
 
-			var new_el = new_ctrl.get('dom.el');
+			var new_el = new_ctrl.dom.el;
 			console.log('new_el', new_el);
 
 		}
@@ -361,9 +327,9 @@ class Control extends Control_Core {
 	}
 
 	'one_mousedown_anywhere'(callback) {
-		//var ctrl_html_root = this._context.ctrl_document;
-		//console.log('this._context', this._context);
-		var body = this._context.body();
+		//var ctrl_html_root = this.context.ctrl_document;
+		//console.log('this.context', this.context);
+		var body = this.context.body();
 
 		var that = this;
 
@@ -372,7 +338,7 @@ class Control extends Control_Core {
 
 			// Would be good to have that in the event.
 
-			var el = that.get('dom.el');
+			var el = that.dom.el;
 
 			var e_el = e_mousedown.srcElement || e_mousedown.target;
 
@@ -401,9 +367,9 @@ class Control extends Control_Core {
 
 	'activate_recursive'() {
 		console.log('activate_recursive');
-		var el = this.get('dom.el');
+		var el = this.dom.el;
 
-		var context = this._context;
+		var context = this.context;
 		var map_controls = context.map_controls;
 
 		var parent_control;
@@ -456,7 +422,7 @@ class Control extends Control_Core {
 		var a = arguments; a.l = arguments.length; var sig = get_a_sig(a, 1);
 
 		/*
-		 var el = this.get('dom.el');
+		 var el = this.dom.el;
 		 if (el) {
 
 		 // Check if the element has that event listener...
@@ -556,7 +522,7 @@ class Control extends Control_Core {
 
 				var listener = this.mapListeners[event_name];
 				var that = this;
-				var dv_el = this.get('dom.el');
+				var dv_el = this.dom.el;
 				var el;
 
 				if (dv_el) {
@@ -626,7 +592,8 @@ class Control extends Control_Core {
 			this.__active = true;
 			//console.log('el', el);
 			if (el) {
-				this.set('dom.el', el);
+				//this.set('dom.el', el);
+				this.dom.el = el;
 			}
 
 			this.rec_desc_ensure_ctrl_el_refs();
@@ -639,11 +606,11 @@ class Control extends Control_Core {
 	}
 	'activate_other_changes_listen'() {
 		var el;
-		var dom_attributes = this.get('dom.attributes');
+		var dom_attributes = this.dom.attrs;
 		//console.log('dom_attributes', dom_attributes);
 
-		var dv_el = this.get('dom.el');
-		if (dv_el) el = dv_el.value();
+		var el = this.dom.el;
+		//if (dv_el) el = dv_el.value();
 
 		dom_attributes.on('change', function(e_change) {
 			var property_name = e_change.name, dval = e_change.value;
@@ -660,60 +627,43 @@ class Control extends Control_Core {
 			if (el && el.nodeType === 1) {
 				el.setAttribute(property_name, dval);
 			}
-
-
 		});
 	}
 	'activate_content_listen'() {
 		//console.log('activate_content_listen');
-
-
-		var content = this.get('content');
-
+		var content = this.content;
 		//console.log('1) content.length()', content.length());
-
 		var that = this;
-		var context = this._context;
+		var context = this.context;
 		var map_controls = context.map_controls;
 		content.on('change', function(e_change) {
 			var el;
-			var dv_el = that.get('dom.el');
+			var dv_el = that.dom.el;
 			//console.log('that.__id', that.__id);
 			if (dv_el) el = dv_el.value();
 			var type = e_change.type;
-
 			if (type === 'insert') {
 				//console.log('e_change', e_change);
 				var item = e_change.item;
-				var retrieved_item_dom_el = item.get('dom.el');
-
+				var retrieved_item_dom_el = item.dom.el;
 				var t_ret = tof(retrieved_item_dom_el);
 				//console.log('t_ret', t_ret);
 				//throw 'stop';
 				if (t_ret === 'string') {
 					itemDomEl = retrieved_item_dom_el;
-
 				} else {
 					//console.log('item', item);
-
 					// Not so sure it's a Data_Value here.
 					//  It generally should be, but it may not always be.
-
 					//console.log('dv_item_dom_el', retrieved_item_dom_el);
-
-
 					var itemDomEl;
-
 					//console.log('retrieved_item_dom_el', retrieved_item_dom_el);
 					if (retrieved_item_dom_el) console.log('keys dv_item_dom_el', Object.keys(retrieved_item_dom_el));
 					//console.log('tof retrieved_item_dom_el', tof(retrieved_item_dom_el));
-
 					//throw 'stop';
-
 					if (retrieved_item_dom_el) {
 						itemDomEl = dv_item_dom_el.value();
 					}
-
 					//if (itemDomEl) console.log('1) itemDomEl', itemDomEl);
 
 					// need to render the item ID in there too.
@@ -730,41 +680,29 @@ class Control extends Control_Core {
 					if (!itemDomEl) {
 						var item_tag_name = 'div';
 						var dv_tag_name = item.get('dom.tagName');
-
 						// no, it's dom.tag_name
-
 						if (dv_tag_name) {
 							item_tag_name = dv_tag_name.value();
 						}
 						var temp_el;
-
 						//console.log('item_tag_name', item_tag_name);
-
-
 						if (item_tag_name == 'circle' || item_tag_name == 'line' || item_tag_name == 'polyline') {
 							// Can make SVG inside an element, with the right namespace.
 
 							// TODO Maybe we can have a global temporary SVG container.
-
-							var temp_svg_container = e_change.item._context.document.createElement('div');
-
-
-
+							var temp_svg_container = e_change.item.context.document.createElement('div');
 							temp_svg_container.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">' + e_change.item.all_html_render() + '</svg>';
 							itemDomEl = temp_svg_container.childNodes[0].childNodes[0];
 							//
-
-							//itemDomEl = e_change.item._context.document.createElementNS("http://www.w3.org/2000/svg", item_tag_name);
+							//itemDomEl = e_change.item.context.document.createElementNS("http://www.w3.org/2000/svg", item_tag_name);
 							//console.log('itemDomEl', itemDomEl);
 							//throw 'stop';
-
-
 						} else {
-							temp_el = e_change.item._context.document.createElement('div');
+							temp_el = e_change.item.context.document.createElement('div');
 							temp_el.innerHTML = e_change.item.all_html_render();
 							itemDomEl = temp_el.childNodes[0];
 						}
-						item._.el = itemDomEl;
+						item.el = itemDomEl;
 						e_change.item.set('dom.el', itemDomEl);
 						item.active();
 					};
@@ -780,15 +718,11 @@ class Control extends Control_Core {
 					//console.log('*** that._id()', that._id());
 					var grandparent = that.parent().parent();
 					//console.log('grandparent', grandparent);
-
 					grandparent.rec_desc_ensure_ctrl_el_refs();
 					el = context.map_els[that._id()];
-
 					//console.log('el', el);
-
-					that.set('dom.el', el);
+					that.dom.el = el;
 				}
-
 				el.appendChild(itemDomEl);
 			}
 			if (type === 'clear') {
@@ -799,25 +733,8 @@ class Control extends Control_Core {
 	}
 
 	'rec_desc_ensure_ctrl_el_refs'(el) {
-
-		var retrieved_el = this.get('dom.el');
-		//console.log('retrieved_el', retrieved_el);
-
-		var el;
-
-		if (retrieved_el) {
-			if (retrieved_el.__data_value)  {
-				el = retrieved_el.value();
-			} else {
-				el = retrieved_el;
-			}
-		} else {
-			if (this._.el && this._.el._) {
-				el = this._.el._;
-			}
-		}
-		
-		var context = this._context;
+		var el = this.dom.el;
+		var context = this.context;
 		if (el) {
 			var c, l, cns;
 			var jsgui_id;
@@ -829,15 +746,11 @@ class Control extends Control_Core {
 				if (el.getAttribute) {
 					jsgui_id = el.getAttribute('data-jsgui-id');
 					//console.log('found jsgui_id', jsgui_id);
-
 					if (jsgui_id) {
-
 						//map_controls[jsgui_id] = el;
-
 						// Make a map of elements...?
 						map_els[jsgui_id] = el;
 						context.map_els[jsgui_id] = el;
-
 					}
 				}
 			});
@@ -845,19 +758,14 @@ class Control extends Control_Core {
 			desc(this, function(ctrl) {
 				// ensure the control is registered with the context.
 				//console.log('desc ctrl', ctrl);
-
 				var t_ctrl = tof(ctrl);
 				//console.log('t_ctrl', t_ctrl);
-
 				if (ctrl !== this && t_ctrl === 'control') {
 					var id = ctrl._id();
 					//console.log('id', id);
-
 					// Seems like it's not in the map.
-
 					if (map_els[id]) {
 						//console.log('map_els[id]', map_els[id]);
-
 						ctrl.set('dom.el', map_els[id]);
 						ctrl._.el = map_els[id];
 					}
@@ -871,14 +779,11 @@ class Control extends Control_Core {
 		desc(this, function(ctrl) {
 			// ensure the control is registered with the context.
 			//console.log('desc ctrl', ctrl);
-
 			var t_ctrl = tof(ctrl);
 
 			if (t_ctrl === 'control') {
 				ctrl.activate();
-
 			}
-
 		});
 	}
 
@@ -886,30 +791,19 @@ class Control extends Control_Core {
 		// This could do with some enhancement, so that it automatically does a recursive activation.
 		// ensure content dom el refs
 		//  recursively ensures the DOM node references for the elements inside.
-		var dv_el = this.get('dom.el');
-		var el;
-
-		if (dv_el) {
-			el = dv_el.value();
-		}
-
-
+		var el = this.dom.el;
 
 		if (el) {
-			var context = this._context;
-
+			var context = this.context;
 			var ctrl_fields = {};
 			var that = this;
 			var c, l;
-
-			var my_content = this.get('content');
-
+			var my_content = this.content;
 			var str_ctrl_fields = el.getAttribute('data-jsgui-ctrl-fields');
 			if (str_ctrl_fields) {
 				//console.log('str_ctrl_fields ' + str_ctrl_fields);
 				ctrl_fields = JSON.parse(str_ctrl_fields.replace(/'/g, '"'));
 			}
-
 			var ctrl_fields_keys = Object.keys(ctrl_fields);
 
 			var l_ctrl_fields_keys = ctrl_fields_keys.length;
@@ -923,7 +817,7 @@ class Control extends Control_Core {
 				that.set(key, referred_to_control);
 			}
 			var cns = el.childNodes;
-			var content = this.get('content');
+			var content = this.content;
 			// Adding the content again?
 			//console.log('cns', cns);
 			//console.log('cns.length', cns.length);
@@ -961,32 +855,20 @@ class Control extends Control_Core {
 						var val = cn.nodeValue;
 						//console.log('val ' + val);
 						content.push(val);
-
 					}
 				}
 			}
-
 		}
 		this.rec_desc_activate();
 	}
 
 	'activate_dom_attributes'() {
-
 		// Needs to get the class out of the DOM properly.
-
 		//console.log('activate_dom_attributes');
 
-		var dv_el = this.get('dom.el');
-		var el;
-
-
-
-		if (dv_el) {
-			el = dv_el.value();
-		}
+		var el = this.dom.el;
 
 		//console.log('** el', el);
-
 		// may not have el....?
 		var that = this;
 		var dom_attributes = this.get('dom.attributes');
@@ -1003,9 +885,7 @@ class Control extends Control_Core {
 				} else if (name == 'data-jsgui-type') {
 					// ^
 				} else if (name == 'style') {
-
 					var map_inline_css = this._icss;
-
 					var arr_style_items = value.split(';');
 					//console.log('arr_style_items', arr_style_items);
 
@@ -1023,8 +903,6 @@ class Control extends Control_Core {
 					}
 					//} else if (name == 'data-jsgui-fields') {
 					// Should probably rely on using init a lot more now.
-
-
 					//    var str_properties = value;
 
 					//    if (str_properties) {
@@ -1040,29 +918,23 @@ class Control extends Control_Core {
 	}
 	'hide'() {
 		this.add_class('hidden');
-
 	}
 	'show'() {
 		//console.log('show');
-
 		this.remove_class('hidden');
-
 	}
 
 	'descendants'(search) {
 		// assembles a list of the descendents that match the search
 		//  (search by .__type_name)
-
 		// eg get a list of menu_node objects.
-
 		// basically need to recursively go through the descendents, with a callback in here, and see if they match the search.
-
 		// recursive iteration of the control(s)
 
 		var recursive_iterate = function(ctrl, item_callback) {
 			// callback on all of the child controls, and then iterate those.
 			//console.log('recursive_iterate');
-			var content = ctrl.get('content');
+			var content = ctrl.content;
 			//console.log('content', content);
 
 			var t_content = tof(content);
@@ -1083,9 +955,7 @@ class Control extends Control_Core {
 				}
 			}
 		}
-
 		var arr_matching = [];
-
 		recursive_iterate(this, function(item) {
 			// see if the item matches the search
 
@@ -1101,21 +971,17 @@ class Control extends Control_Core {
 		});
 		//console.log('arr_matching', arr_matching);
 		return arr_matching;
-
 	}
 
 	'ancestor'(search) {
 		// could maybe work when not activated too...
 		// need to get the ancestor control matching the search (in type).
-
 		if (this._parent) {
 			var ctrl_parent = this._parent._parent;
 			// the _parent is a Collection within the parent Control
-
 			if (!ctrl_parent) {
 				return false;
 			} else {
-
 				//console.log('ctrl_parent', ctrl_parent);
 				// does the parent match the type?
 
@@ -1127,59 +993,39 @@ class Control extends Control_Core {
 				} else {
 					return ctrl_parent.ancestor(search);
 				}
-
-
-
 			}
 		} else {
 			return false;
 		}
-
 	}
-
 	'context_menu'() {
-
 		var a = arguments; a.l = arguments.length; var sig = get_a_sig(a, 1);
-
 		var menu_def;
 		if (sig == '[o]' || sig == '[a]') {
 			menu_def = a[0];
 		}
-
 		var Context_Menu = Context_Menu || require('./controls/advanced/context-menu');
-
 		var context_menu;
 		var that = this;
-
 		// Need it so that the context menu gets removed when it should.
 		//  Any mouseup event causes it to vanish.
-
-		var body = this._context.body();
-
-		//var ctrl_html_root = this._context.ctrl_document;
-
+		var body = this.context.body;
+		//var ctrl_html_root = this.context.ctrl_document;
 		//console.log('ctrl_html_root', ctrl_html_root);
-
 		//var body = ctrl_html_root.body();
-
 		var show_context_menu = fp(function(a, sig) {
 			var pos;
-
-
 			if (sig == '[a]') {
 				// A position?
-
 				pos = a[0];
-
 			}
-
 			if (!context_menu) {
 				//console.log('creating new context menu');
 
 				//console.log('menu_def', menu_def);
 
 				context_menu = new Context_Menu({
-					'context': that._context,
+					'context': that.context,
 					'value': menu_def
 				});
 
@@ -1196,7 +1042,7 @@ class Control extends Control_Core {
 					});
 
 				}
-				var context = that._context;
+				var context = that.context;
 			} else {
 
 				if (pos) {
@@ -1204,33 +1050,22 @@ class Control extends Control_Core {
 						'left': (pos[0] - 1) + 'px',
 						'top': (pos[1] - 1) + 'px'
 					});
-
 				} else {
 					context_menu.style({
 						'left': '100px',
 						'top': '100px'
 					});
 				}
-
-
 			}
-
 			setTimeout(function() {
-
 				body.add(context_menu);
-
 				//console.log('pre activate context_menu._.content._arr.length ' + context_menu._.content._arr.length);
-
 				context_menu.activate();
-
 				context_menu.one_mousedown_anywhere(function(e_mousedown) {
 					//console.log('e_mousedown.within_this ' + e_mousedown.within_this);
 
 					if (!e_mousedown.within_this) {
 						context_menu.remove();
-
-
-
 					} else {
 						// maybe open a new level.
 
@@ -1239,37 +1074,23 @@ class Control extends Control_Core {
 						console.log('e_mousedown', e_mousedown);
 
 						var el_target = e_mousedown.target;
-
 						// the target control will have a jsgui id now.
 						//  we should be able to then go to its parent and get its menu node.
-
-						var context = that._context;
+						var context = that.context;
 						console.log('context', context);
-
 						var target_id = el_target.getAttribute('data-jsgui-id');
 						console.log('target_id', target_id);
-
 						var ctrl_target = context.map_controls[target_id];
-
 						console.log('ctrl_target', ctrl_target);
-
 						// want to be able to get an ancestor of type menu-node
-
 						var menu_node = ctrl_target.ancestor('menu_node');
 						console.log('menu_node', menu_node);
-
 						// and raise the menu_node select event.
-
 						menu_node.raise('select');
-
 						context_menu.remove();
 					}
-
-
 				});
-
 			}, 0);
-
 		});
 
 		this.on('contextmenu', function(e_contextmenu) {
@@ -1280,9 +1101,7 @@ class Control extends Control_Core {
 
 		this.on('mousedown', function(e_mousedown) {
 			//console.log('e_mousedown', e_mousedown);
-
 			var int_button = e_mousedown.which;
-
 			if (int_button == 3) {
 				e_mousedown.preventDefault();
 				window.event.returnValue = false;
@@ -1292,7 +1111,6 @@ class Control extends Control_Core {
 
 		this.on('mouseup', function(e_mouseup) {
 			//console.log('e_mouseup', e_mouseup);
-
 			var int_button = e_mouseup.which;
 
 			if (int_button == 3) {
@@ -1303,18 +1121,12 @@ class Control extends Control_Core {
 				// pageX, pageY
 				var pos = [e_mouseup.pageX, e_mouseup.pageY];
 				show_context_menu(pos);
-
 				return false;
 			}
 		})
-
-
 	}
-
-
 	// make full height.
 	//  makes the control take the rest of the height of the window.
-
 	// Drag function as well...
 	//  Could make this accept the same params as the drag function,
 	//   but this version will be more flexible with more modes.
@@ -1324,20 +1136,14 @@ class Control extends Control_Core {
 		var a = arguments; a.l = arguments.length; var sig = get_a_sig(a, 1);
 		var that = this;
 		//console.log('draggable sig', sig);
-
 		//console.trace();
-
 		var options = {}, mode, drag_start_distance = 4;
-
 		// options could contain event handlers.
 		//  Not sure about the publish / subscribe model.
 		//   Maybe it would work well.
-
 		// But allowing event handlers as specified in the options would be good as well.
-
 		var fn_mousedown, fn_dragstart, fn_dragmove, fn_dragend;
 		var handle_mousedown, handle_dragstart, handle_dragmove , handle_dragend;
-
 
 		if (sig == '[o]') {
 			options = a[0];
@@ -1366,25 +1172,18 @@ class Control extends Control_Core {
 			console.log('ghost-copy drag');
 		}
 
-		var body = that._context.body();
-
+		var body = that.context.body();
 		// raise the events externally.
-
 		var is_dragging;
 		var pos_mousedown;
 
 		var ghost_clone;
 		var fn_mousemove = function(e_mousemove) {
 			//console.log('e_mousemove', e_mousemove);
-
 			var pos = [e_mousemove.pageX, e_mousemove.pageY];
-
 			var pos_offset = [pos[0] - pos_mousedown[0], pos[1] - pos_mousedown[1]];
 
-
-
 			//console.log('dist', dist);
-
 			//console.log('is_dragging ' + is_dragging);
 
 			if (!is_dragging) {
@@ -1392,109 +1191,71 @@ class Control extends Control_Core {
 				if (dist >= drag_start_distance) {
 					//console.log('starting drag');
 					is_dragging = true;
-
 					// in ghost copy mode create the ghost copy
-
 					if (mode == 'ghost-copy') {
 						ghost_clone = that.absolute_ghost_clone();
-
 					}
-
-
 					if (handle_dragstart) {
 						e_mousemove.control = that;
-
-
 						// set the body's css cursor to 'default'
 						//body.style('cursor', 'default');
 						body.add_class('no-text-select')
 						body.add_class('default-cursor');
 						//body.add_class('dragging');
-
-
-
 						handle_dragstart(e_mousemove);
 					}
 				}
 			}
-
 			if (is_dragging) {
 				// raise the drag event.
-
 				// could do some of the drag-drop activity depending on the drag mode.
 				//  also want to provide other hooks for functionality.
-
-				//console.log('fn_dragmove', fn_dragmove);
-
+				// console.log('fn_dragmove', fn_dragmove);
 				if (handle_dragmove) {
 					e_mousemove.control = that;
 					//console.log('e_mousemove', e_mousemove);
 					handle_dragmove(e_mousemove);
 				}
-
 			}
-
-
-
 			// Want the offset from the mousedown position.
-
 		}
 		var fn_mouseup = function(e_mouseup) {
 			//console.log('e_mouseup', e_mouseup);
-
 			//console.log('pre switch off mousemove, mouseup');
-
 			// Seems the events are being added too many times.
-
 			body.off('mousemove', fn_mousemove);
 			body.off('mouseup', fn_mouseup);
-
 			body.remove_class('no-text-select');
 			body.remove_class('default-cursor');
 			//body.remove_class('dragging');
 		}
-
 		this.on('mousedown', function(e_mousedown) {
 			//console.log('e_mousedown', e_mousedown);
-
 			pos_mousedown = [e_mousedown.pageX, e_mousedown.pageY];
-
 			// position within Control
 			// position within window
-
-
 			body.on('mousemove', fn_mousemove);
 			body.on('mouseup', fn_mouseup);
-
 			body.add_class('no-text-select');
 			is_dragging = false;
-
 			if (handle_mousedown) {
 				handle_mousedown(e_mousedown);
 			}
-
 		})
-
-
 	}
 
 	'drag_handle_to'(ctrl) {
 		var mousedown_offset_from_ctrl_lt;
-
-		var ctrl_el = ctrl.get('dom.el');
+		var ctrl_el = ctrl.dom.el;
 		// could go in enhanced....
-
 		//this.drag(function(e_mousedown) {
 		this.draggable(function(e_mousedown) {
 			//console.log('e_mousedown', e_mousedown);
-
-
 			// This will need to be revised - making adjustment for when dragging from an anchored position.
 			//  Should maintain some info about the drag so it knows if it starts/ends anchored anywhere.
 			var target = e_mousedown.target;
 			var targetPos = findPos(target);
 			//console.log('targetPos ' + stringify(targetPos));
-
 			var el_ctrl = ctrl.value('dom.el');
 			var ctrl_el_pos = findPos(el_ctrl);
 			var e_pos_on_page = [e_mousedown.pageX, e_mousedown.pageY];
@@ -1503,10 +1264,8 @@ class Control extends Control_Core {
 		}, function(e_begin) {
 			var ctrlSize = ctrl.size();
 			//console.log('ctrlSize', ctrlSize);
-
-			var anchored_to = ctrl.get('anchored_to');
+			var anchored_to = ctrl.anchored_to;
 			//console.log('anchored_to', anchored_to);
-
 			if (!anchored_to) {
 				//ctrl.set('unanchored_size', ctrlSize);
 			} else {
@@ -1517,20 +1276,16 @@ class Control extends Control_Core {
 			var clientX = e_move.clientX;
 			var clientY = e_move.clientY;
 			var window_size = get_window_size();
-
 			//console.log('mousedown_offset_from_ctrl_lt', mousedown_offset_from_ctrl_lt);
-
-
 			var ctrl_pos = jsgui.v_subtract([clientX, clientY], mousedown_offset_from_ctrl_lt);
 
 			// But then act differently if we are dragging from an anchored position.
 			//  The mousedown offset within the control won't be so relevant -
 			//   or won't be the only factor.
-
 			// Take account of position_adjustment
 			//  or offset_adjustment
 
-			var offset_adjustment = ctrl.get('offset_adjustment');
+			var offset_adjustment = ctrl.offset_adjustment;
 			if (offset_adjustment) {
 				// want to find out what zone it is anchored in.
 
@@ -1553,25 +1308,25 @@ class Control extends Control_Core {
 			};
 			//console.log('style_vals', style_vals);
 			ctrl.style(style_vals);
-			ctrl._context.move_drag_ctrl(e_move, ctrl);
+			ctrl.context.move_drag_ctrl(e_move, ctrl);
 		}, function(e_end) {
 			// tell the context that the drag has ended.
-			var uo1 = ctrl.get('unanchored_offset');
+			var uo1 = ctrl.unanchored_offset;
 			//console.log('uo1', uo1);
-			ctrl._context.end_drag_ctrl(e_end, ctrl);
-			var uo2 = ctrl.get('unanchored_offset');
+			ctrl.context.end_drag_ctrl(e_end, ctrl);
+			var uo2 = ctrl.unanchored_offset;
 			//console.log('uo2', uo2);
 			if (uo1 && uo2) {
-				ctrl.set('unanchored_offset', null);
+				ctrl.unanchored_offset = null;
 			}
-			ctrl.set('offset_adjustment', null);
+			ctrl.offset_adjustment = null;
 			// and if it already has an unanchored_offset
 		});
 	}
 	'resize_handle_to'(ctrl, handle_position) {
 		// The control needs to be draggable normally?
 		//  And then from the positions of where it is adjust the size of what it's a resize handle to?
-		console.log('resize_handle_to');
+		//console.log('resize_handle_to');
 		if (handle_position == 'right-bottom') {
 			var fn_move = function(e_move) {
 				console.log('e_move', e_move);
@@ -1579,19 +1334,19 @@ class Control extends Control_Core {
 			var fn_up = function(e_up) {
 				console.log(e_up);
 			}
-			var doc = ctrl._context.ctrl_document;
-			console.log('ctrl._context', ctrl._context);
+			var doc = ctrl.context.ctrl_document;
+			//console.log('ctrl.context', ctrl.context);
 			var fn_move = function(e_move) {
-				console.log('e_move', e_move);
+				//console.log('e_move', e_move);
 			}
 			var fn_up = function(e_up) {
-				console.log('e_up', e_up);
+				//console.log('e_up', e_up);
 
 				doc.off('mousemove', fn_move);
 				doc.off('mouseup', fn_up);
 			}
 			ctrl.on('mousedown', function(e_mousedown) {
-				console.log('e_mousedown', e_mousedown);
+				//console.log('e_mousedown', e_mousedown);
 				doc.on('mousemove', fn_move);
 				doc.on('mouseup', fn_up);
 			})
@@ -1603,9 +1358,9 @@ class Control extends Control_Core {
 		ctrl = ctrl || this;
 
 		if (typeof document === 'undefined') {
-			that._fields = that._fields || {};
-			that._fields['is_selectable'] = true;
-
+			//that._fields = that._fields || {};
+			//that._fields['is_selectable'] = true;
+			that.is_selectable = true;
 
 		} else {
 
@@ -1623,7 +1378,7 @@ class Control extends Control_Core {
 
 	'action_select_only'() {
 		var ss = this.find_selection_scope();
-		console.log('ss', ss);
+		//console.log('ss', ss);
 		ss.select_only(this);
 		//this.find_selection_scope().select_only(this);
 	}
@@ -1634,38 +1389,26 @@ class Control extends Control_Core {
 
 	// So I think the resource-pool will have a selection scope.
 	'find_selection_scope'() {
-		console.log('find_selection_scope');
-		var res = this.get('selection_scope');
+		//console.log('find_selection_scope');
+		var res = this.selection_scope;
 		if (res) return res;
-		var parent_control_collection = this.parent();
-		if (parent_control_collection) {
-			var parent_control = parent_control_collection.parent();
-			if (parent_control) return parent_control.find_selection_scope();
-		} else {
-
-		}
+		if (this.parent) return this.parent.find_selection_scope();
 	}
 
 	// Nice, this works. Not that efficiently yet.
 
 	'make_full_height'() {
-		var el = this.get('dom.el');
+		var el = this.dom.el;
 		var viewportHeight = document.documentElement.clientHeight;
-
-
 		var rect = el.getBoundingClientRect();
 		console.log(rect.top, rect.right, rect.bottom, rect.left);
-
 		var h = viewportHeight - rect.top;
-
 		this.style('height', h + 'px', true);
 	}
-	'unanchor': function() {
+	'unanchor'() {
 		var anchored_to = this.get('anchored_to');
 		anchored_to[0].unanchor_ctrl(this);
-
 	}
-
 };
 
 module.exports = Control;

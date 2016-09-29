@@ -1,0 +1,17 @@
+{
+  "name": "jsgui2-html",
+  "main": "html.js",
+  "license" : "MIT",
+  "dependencies": {
+    "jsgui2-lang": ">= 0.0.1"
+  },
+  "engines" : { "node" : ">=6.5.0" },
+  "description": "ES6 jsgui HTML package. Control and rendering code, Page_Context",
+  "author": "James Vickers <james@metabench.com>",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/metabench/jsgui2-html.git"
+  },
+  "version": "0.0.3"
+
+}
